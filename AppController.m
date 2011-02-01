@@ -13,8 +13,6 @@
 #include <stdio.h>
 #include <mach/mach.h>
 #include <IOKit/IOKitLib.h>
-//#include <CoreFoundation/CoreFoundation.h>
-//#include <ApplicationServices/ApplicationServices.h>
 #include "lmucommon.h"
 
 static io_connect_t dataPort = 0;
@@ -33,8 +31,8 @@ static double updateInterval = 0.5;
 
 - (void)awakeFromNib
 {	
-	if ([showAtStartup state]) {
-		[welcome makeKeyAndOrderFront:YES];
+	if (![showAtStartup state]) {
+		[welcome makeKeyAndOrderFront:self];
 	}
 	
 	statusItem = [[[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength] retain];
@@ -119,7 +117,7 @@ static double updateInterval = 0.5;
 	}
 	
 	//setbuf(stdout, NULL);
-	NSLog(@"%8ld %8ld \n", 0L, 0L);
+	NSLog(@"Shadows Started - %8ld %8ld \n", 0L, 0L);
 	
 	refreshTimer = [NSTimer scheduledTimerWithTimeInterval:updateInterval target:self selector:@selector(refreshTimer) userInfo:nil repeats:YES];
 }
@@ -135,7 +133,6 @@ static double updateInterval = 0.5;
 	int64_t		doRight = 0;
 	
 	//kr = IOConnectMethodScalarIScalarO(dataPort, kGetSensorReadingID, scalarInputCount, scalarOutputCount, &left, &right);
-	
 	//kr = IOConnectCallMethod(dataPort, kGetSensorReadingID, &left, scalarInputCount, nil, 0, &right, &scalarOutputCount, nil, 0);
 	
 	kr = IOConnectCallScalarMethod(dataPort, kGetSensorReadingID, &left, scalarInputCount, &right, &scalarOutputCount);
@@ -156,16 +153,16 @@ static double updateInterval = 0.5;
 	
 	if (kr == KERN_SUCCESS) {
 		//printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b%8ld %8ld", left, right);
-		NSLog(@" New values: %8ld %d", intLeft, intRight);
+		//NSLog(@" New values: %8ld %d", intLeft, intRight);
 		//NSLog(@" Old values: %8ld %d", oldLeft, oldRight);
 		doRight = oldLeft - left - shadowSensitivity;
 		doLeft = oldRight - right - shadowSensitivity;
 		//NSLog(@" Old - New: %8ld %d \n", doLeft, doRight);
 		
 		if ((0 < doRight) && (0 < doLeft)) {
-			NSLog(@"--------- %i > 0 --- %i > 0 --------", doLeft, doRight);
-			NSLog(@"Perform Double Operation");
-			//[self performDoubleOperation];
+			//NSLog(@"--------- %i > 0 --- %i > 0 --------", doLeft, doRight);
+			//NSLog(@"Perform Double Operation");
+			[self performDoubleOperation];
 			oldLeft = left;
 			oldRight = right;
 			return;
@@ -173,15 +170,15 @@ static double updateInterval = 0.5;
 		
 		
 		if (0 < doLeft) {
-			NSLog(@"--------- %8ld > 0 --------", doLeft);
-			NSLog(@"Perform Left Operation");
-			//[self performLeftOperation];
+			//NSLog(@"--------- %8ld > 0 --------", doLeft);
+			//NSLog(@"Perform Left Operation");
+			[self performLeftOperation];
 		}
 		
 		if (0 < doRight) {
-			NSLog(@"--------- %8ld > 0 --------", doRight);
-			NSLog(@"Perform Right Operation");
-			//[self performRightOperation]; 
+			//NSLog(@"--------- %8ld > 0 --------", doRight);
+			//NSLog(@"Perform Right Operation");
+			[self performRightOperation]; 
 		}
 		oldLeft = left;
 		oldRight = right;
